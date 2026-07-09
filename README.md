@@ -1,189 +1,215 @@
 # Smart Home Appliance Controller
+
 ![Arduino](https://img.shields.io/badge/Arduino-UNO%20R3-00979D?style=flat&logo=arduino)
 ![Language](https://img.shields.io/badge/Language-C%2B%2B-blue?style=flat&logo=cplusplus)
 ![Course](https://img.shields.io/badge/FIU-EEL4730-blue?style=flat)
 
-Modern homes rely on embedded systems to automate appliances and improve energy efficiency. This project presents a fully functional smart home appliance controller built on an Arduino UNO R3 (ATmega328P — Harvard architecture, 8-bit RISC microcontroller), designed to automatically manage a DC fan based on real-time environmental conditions.
+An embedded climate controller that automatically manages a DC fan from
+real-time temperature, humidity, and ambient light — built on an Arduino
+UNO R3 with a four-mode state machine, an LCD status display, and a
+hardware safety cutoff.
 
-The system reads temperature and humidity from a DHT11 digital sensor and ambient light levels from a photoresistor (ADC), then responds by controlling a DC fan motor through PWM, visual RGB LED state indicators, an LCD1602 display, and a safety buzzer alarm — all communicating status to a PC via UART serial output.
+> Originally developed as a **team project** for EEL 4730 (Programming
+> Embedded Systems) at Florida International University. This repository is
+> **Mohamed Elbahlool's** cleaned-up, documented, portfolio version of that
+> work — see [Credits](#credits--contributors).
 
-The hardware-software integration is achieved through direct peripheral register control: GPIO pins manage buttons and LEDs, the PWM module controls fan speed proportionally to temperature, the ADC converts analog light levels to digital values, and a state machine governs system behavior across four operating modes — AUTO, MANUAL, SLEEP, and ALARM. A safety countermeasure automatically shuts down the fan and triggers an alarm when temperature exceeds 35°C, mirroring real-world embedded safety systems used in home appliances and HVAC controllers.
+![Full system](images/full-system.jpg)
 
----
+## Overview
 
-## 📚 Table of Contents
+The controller reads a DHT11 temperature/humidity sensor and a
+photoresistor, then drives a small DC fan through a PN2222 transistor with
+PWM. A 16x2 LCD shows live readings and the active mode, three LEDs give
+at-a-glance state, and an active buzzer plus automatic fan shutdown act as
+an over-temperature countermeasure at 35 °C — the same protective pattern
+used in real HVAC and appliance controllers. Everything is also logged over
+UART at 9600 baud.
 
-- [Features](#features)
-- [Hardware Components](#hardware-components)
-- [Pin Connections](#pin-connections)
-- [Course Concepts Demonstrated](#course-concepts-demonstrated)
-- [State Machine](#state-machine)
-- [Wiring Diagram](#wiring-diagram)
-- [Hardware Photos](#hardware-photos)
-- [Video Demo AND Explanation of Wiring](#video-demo-and-explanation-of-wiring)
-- [Getting Started](#getting-started)
-- [Serial Monitor Output Example](#serial-monitor-output-example)
-- [Additional Information](#additional-information)
-
----
+The project was built to exercise the core embedded-systems toolkit on real
+hardware: ADC sampling, PWM actuation, GPIO with pull-ups and debouncing, a
+digital single-wire sensor protocol, UART logging, and a state machine tying
+it all together.
 
 ## Features
-- AUTO mode: Default mode, fan speed automatically adjusts based on temperature (LOW / MEDIUM / FULL / ALARM).
-- MANUAL mode: User manually cycles fan speed via a button (OFF / LOW / MEDIUM / FULL).
-- SLEEP mode: Fan off, blue LED dims/brightens based on ambient light (smart nightlight).
-- ALARM condition: Fan off, buzzer sounds, red LED flashes when temperature exceeds 35°C.
-  
-- LCD display:  Real-time temperature, humidity, and system state.
-- RGB LED indicators: Green (AUTO) | Blue (MANUAL) | Dim Blue (SLEEP) | Red (ALARM)
-- Light detection: Photoresistor classifies environment as Dark / Dim / Light / Bright / Very Bright. It will show at Serial Monitor/Console.
-  
-- Serial logging: Structured data output to PC at 9600 baud
 
----
+- **AUTO mode** — fan speed follows temperature: LOW below 24 °C, MEDIUM
+  from 24 °C, FULL from 28 °C
+- **MANUAL mode** — a button cycles the fan OFF → LOW → MEDIUM → FULL
+- **SLEEP mode** — fan off; the blue LED becomes an adaptive nightlight
+  (darker room → brighter LED, using the LDR reading)
+- **ALARM** — at ≥ 35 °C the fan shuts down, the buzzer sounds, and the red
+  LED lights until the temperature falls
+- **LCD1602 display** — temperature, humidity, and current mode, live
+- **Ambient light classification** — Dark / Dim / Light / Bright / Very
+  Bright, reported over serial
+- **Structured serial logging** — every reading and state change at 9600 baud
 
-## Hardware Components
-| Component               | Purpose                          |
-|-------------------------|----------------------------------|
-| Elegoo UNO R3           | Main microcontroller             |
-| 830-point breadboard    | Prototyping platform             |
-| DHT11                   | Reads temp and humidity          |
-| Photoresistor (LDR)     | Ambient light detection          |
-| DC Fan Motor            | PWM-controlled fan               |
-| Active buzzer           | Alarm output                     |
-| x3 RGB LED              | Visual state indicator           |
-| LCD1602 display         | Live sensor readings             |
-| PN2222 transistor       | Fan motor driver                 |
-| 1N4007 flyback diode    | Motor protection                 |
-| 2x Push buttons         | Mode and speed control           |
-| 10kΩ resistor           | Ambient light detection          |
-| 1kΩ resistors           | Transistor base resistor         |
-| 3x 220Ω resistors       | LED current limiting             |
+## System architecture
 
----
+```
+            ┌────────────────────── Arduino UNO R3 (ATmega328P) ─────────────────────┐
+ sensors    │                                                                        │  outputs
+ DHT11 ──────▶ single-wire read ──┐                       ┌── PWM (D11) ──▶ PN2222 ──▶ DC fan
+ LDR ────────▶ ADC (A0) ──────────┤   state machine       ├── GPIO ───────▶ LEDs (R/G/B)
+ buttons ────▶ GPIO + debounce ───┤ AUTO/MANUAL/SLEEP/ALARM├── GPIO ───────▶ buzzer
+            │                     └───────────────────────┤── 4-bit bus ──▶ LCD1602
+            │                                             └── UART 9600 ──▶ PC serial monitor
+            └────────────────────────────────────────────────────────────────────────┘
+```
 
-## PIN Connections
-| Arduino PIN             | Component                          |
-|-------------------------|------------------------------------|
-| PIN 2                   |  Mode Button (INPUT_PULLUP)        |
-| PIN 3                   |  Speed Button (INPUT_PULLUP)       |
-| PIN 6                   |  Active buzzer                     |
-| PIN 7                   |  RGB LED Red                       |
-| PIN 8                   |  RGB LED Green                     |
-| PIN 10                  |  RGB LED Blue                      |
-| PIN 11                  |  Fan Motor PWM                     |
-| PIN 13                  |  DHT11 data                        |
-| PIN A0                  |  Photoresistor ADC input           |
-| PIN A1                  |  LCD D7                            |
-| PIN A2                  |  LCD RS                            |
-| PIN A3                  |  LCD EN                            |
-| PIN A4                  |  LCD D4                            |
-| PIN A5                  |  LCD D5                            |
-| PIN 12                  |  LCD D6                            |
+**State machine:** power-on starts in AUTO; the mode button cycles
+AUTO → MANUAL → SLEEP; the alarm condition overrides any mode while the
+temperature is at or above the threshold.
 
----
+## Hardware
 
-## Course Concepts Demonstrated
-- ADC: Photoresistor on A0, analogRead() returns 0–1023.
-- PWM: Fan speed and LED brightness via analogWrite().
-- GPIO: Buttons (input), LEDs, Buzzer (output).
-- Timers: delay(2000), periodic DHT11 sampling.
-- UART: Serial.begin(9600), structured data to PC terminal.
-- State Machine: AUTO | MANUAL | SLEEP | ALARM with modeState.
-- Digital sensor: DHT11 single-wire protocol.
-- Analog sensor: LDR voltage divider to ADC conversion.
-- Hardware interfacing: PN2222 transistor driving DC motor from GPIO.
-- Countermeasure: Fan OFF and  alarm at 35°C safety threshold.
-- Harvard architecture: ATmega328P separates Flash (program) and SRAM (data), same principle as PIC18F4520.
+| Component | Purpose |
+|-----------|---------|
+| Elegoo UNO R3 (ATmega328P) | main microcontroller |
+| DHT11 | temperature + humidity |
+| Photoresistor + 10 kΩ divider | ambient light on A0 |
+| DC fan motor + battery pack | the controlled appliance |
+| PN2222 + 1 kΩ base resistor | low-side fan driver (PWM) |
+| 1N4007 | flyback diode across the motor |
+| LCD1602 + 10 kΩ contrast pot | live status display (4-bit mode) |
+| Red / green / blue LEDs + 220 Ω | mode and alarm indicators |
+| Active buzzer | over-temperature alarm |
+| 2 push buttons | mode select, manual fan speed |
 
----
+Full bill of materials and design notes: [docs/hardware.md](docs/hardware.md)
 
-## State Machine
-    Power ON → AUTO
-    Button 1 press → AUTO → MANUAL → SLEEP → AUTO (cycles)
+## Pinout
 
-    AUTO:   Fan responds to temperature automatically
-    MANUAL: Button 2 cycles fan OFF → LOW → MEDIUM → FULL
-    SLEEP:  Fan off, blue LED brightness adapts to ambient light
-    ALARM:  Triggered when temp >= 35°C — fan off, buzzer ON, red LED
+| Pin | Function | | Pin | Function |
+|-----|----------|-|-----|----------|
+| D2  | Mode button (`INPUT_PULLUP`) | | D12 | LCD D6 |
+| D3  | Speed button (`INPUT_PULLUP`) | | D13 | DHT11 data |
+| D6  | Active buzzer | | A0 | LDR (ADC) |
+| D7  | Red LED | | A1 | LCD D7 |
+| D8  | Green LED | | A2 | LCD RS |
+| D10 | Blue LED (PWM) | | A3 | LCD E |
+| D11 | Fan PWM → PN2222 | | A4/A5 | LCD D4/D5 |
 
----
+## Schematics
 
-## Wiring Diagram
+Complete wiring diagram — available as
+[SVG](schematics/wiring-diagram.svg) ·
+[PNG](schematics/wiring-diagram.png) ·
+[PDF](schematics/wiring-diagram.pdf):
 
+![Wiring diagram](schematics/wiring-diagram.svg)
 
----
+## Getting started
 
-## Hardware Photos
+**Requirements:** Arduino IDE (or `arduino-cli`), an Arduino UNO-compatible
+board, and the hardware above.
 
-### System startup
-![System Startup](Images/Starting.jpg)
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/lla7wel/smart-home-appliance-controller.git
+   ```
+2. Install the **DHT11** library by Dhruba Saha (Library Manager →
+   search "DHT11"). `LiquidCrystal` ships with the IDE.
+3. Open `src/SmartHomeAppliance/SmartHomeAppliance.ino`.
+4. Select **Arduino UNO** and your serial port, then **Upload**.
+5. Open the Serial Monitor at **9600 baud**.
 
-### AUTO mode — fan responding to temperature automatically
-![AUTO Mode](Images/Auto-Mode.jpg)
+Or with the CLI:
+```bash
+arduino-cli lib install DHT11 LiquidCrystal
+arduino-cli compile --fqbn arduino:avr:uno src/SmartHomeAppliance
+arduino-cli upload  --fqbn arduino:avr:uno -p <port> src/SmartHomeAppliance
+```
 
-### MANUAL mode — user controls fan speed via button
-![MANUAL Mode](Images/Manual-Mode-Fan-OFF.jpg)
+### Using it
 
-### MANUAL mode — fan at medium speed
-![MANUAL Mode Medium](Images/Manual-Mode-Fan-Medium.jpg)
+- **Button 1 (D2)** cycles AUTO → MANUAL → SLEEP.
+- **Button 2 (D3)** — in MANUAL — cycles fan OFF → LOW → MEDIUM → FULL.
+- Warm the DHT11 (or breathe on it) past 35 °C to see the alarm
+  countermeasure trip: fan off, buzzer on, red LED.
 
-### SLEEP mode — adaptive blue LED nightlight
-![SLEEP Mode](Images/Sleep-Mode.jpg)
+Example serial output:
 
-### Elegoo UNO R3 — ATmega328P wiring detail
-![MCU Wiring](Images/MCU-Wiring-OFF.jpg)
+```
+Smart Home Appliance Control System
+Temperature: 23C | Humidity: 55%
+Light Detection. Environment Lighting is Light
+Fan Motor: LOW speed
+MODE: MANUAL
+Manual Fan: MEDIUM
+MODE: AUTO
+Fan Motor: FULL speed
+Fan Motor: OFF --- ALARM!! ---
+BUZZER: ON
+```
 
-### Full breadboard layout
-![Breadboard Wiring](Images/Breadboar-Wiring-OFF.jpg)
----
+## Gallery
 
-## Video Demo AND Explanation of Wiring
-[![Smart Home Appliance Control System Demo](https://img.shields.io/badge/YouTube-Watch%20Video-red?style=for-the-badge&logo=youtube)](https://youtu.be/NAKaDOO0xM4)
+| | |
+|---|---|
+| ![Startup](images/startup.jpg) | ![AUTO mode](images/auto-mode.jpg) |
+| System startup | AUTO — fan follows temperature |
+| ![MANUAL mode](images/manual-mode-fan-medium.jpg) | ![SLEEP mode](images/sleep-mode.jpg) |
+| MANUAL — fan at medium | SLEEP — adaptive nightlight |
+| ![Breadboard](images/breadboard-wiring.jpg) | ![MCU wiring](images/mcu-wiring.jpg) |
+| Breadboard layout | UNO wiring detail |
 
----
+## Demo
 
-## Getting Started
-### Prerequisites
-  -  Arduino IDE
-  -  DHT11 library: install via Sketch → Include Library → Manage Libraries → search DHT11 (by Dhruba Saha)
-  -  LiquidCrystal library: built into Arduino IDE
+▶ **[Video demo and wiring walkthrough (YouTube)](https://youtu.be/NAKaDOO0xM4)**
 
-### Upload
-  1) Clone this repository;
+## Repository structure
 
-    git clone https://github.com/Paola-DG/smart-home-appliance-controller.git
-  2) Open SmartHomeAppliance.ino file in Arduino IDE.
-  3) Select board: Arduino UNO.
-  4) Select correct COM port.
-  5) Click Upload.
-  6) Open Serial Monitor at 9600 baud.
+```
+├── src/SmartHomeAppliance/   Arduino sketch
+├── schematics/               wiring diagram (SVG / PNG / PDF)
+├── docs/
+│   ├── hardware.md           BOM, pin map, subsystem notes, assumptions
+│   └── references.md         sources used while building each subsystem
+├── images/                   build photos and mode screenshots
+└── README.md
+```
 
----
+## Known limitations
 
-## Serial Monitor Output Example
-    Smart Home Appliance Control System
-    EEL4730 - FIU
-    Temperature: 23C | Humidity: 55%
-    Light Detection. Enviroment Lighting is Light
-    Fan Motor: LOW speed
-    MODE: MANUAL
-    Manual Fan: MEDIUM
-    MODE: SLEEP
-    MODE: AUTO
-    Fan Motor: FULL speed
-    Fan Motor: OFF --- ALARM!! ---
-    BUZZER: ON
+- The main loop is blocking: a fixed 2 s `delay()` paces sensor sampling, so
+  button presses between iterations can be missed.
+- DHT11 resolution/accuracy is coarse (integer °C, ±2 °C) and its minimum
+  sampling interval limits responsiveness.
+- Mode/threshold values are compile-time constants; there is no runtime
+  configuration or persistence.
+- LDR classification thresholds are uncalibrated — they reflect the original
+  test room.
+- Arduino `String` is used for mode state; fine at this scale, but fixed
+  buffers would be safer on 2 KB of SRAM.
 
----
+## Future improvements
 
-## Additional Information
+- Replace the blocking loop with a `millis()`-based scheduler and pin-change
+  interrupts for the buttons
+- DHT22 for finer temperature resolution
+- Store user settings (mode, manual speed) in EEPROM across power cycles
+- Runtime-adjustable temperature thresholds via the buttons + LCD
+- A proper enclosure and a mains-safe relay stage for a real appliance
 
-Florida International University
+## Credits & Contributors
 
-EEL 4730 - Programming Embedded Systems
+This began as a **team project** for **EEL 4730 — Programming Embedded
+Systems** at **Florida International University** (Spring 2026, Dr. Shafiul
+Islam):
 
-Spring 2026
+- **Paola Dorado Galicia** — original repository author and maintainer
+  ([original repo](https://github.com/Paola-DG/Smart-Home-Appliance-Controller))
+- **Mohamed Elbahlool** — project contributor; author and maintainer of this
+  cleaned, documented, portfolio edition
 
-Instructor: Dr. Shafiul Islam
+This repository preserves the original commit history. The changes on top of
+it are organizational: restructured folders, cleaned comments, rewritten
+documentation, and reconstructed schematics — the design and firmware logic
+are the team's original work.
 
-> Youtube link to see the project: https://www.youtube.com/
+## License
+
+[MIT](LICENSE) — applies to this repository's contents. The underlying
+design and code are credited to the original project team above.
