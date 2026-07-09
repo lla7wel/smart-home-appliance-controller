@@ -9,10 +9,10 @@ real-time temperature, humidity, and ambient light — built on an Arduino
 UNO R3 with a four-mode state machine, an LCD status display, and a
 hardware safety cutoff.
 
-> Originally developed as a **team project** for EEL 4730 (Programming
-> Embedded Systems) at Florida International University. This repository is
-> **Mohamed Elbahlool's** cleaned-up, documented, portfolio version of that
-> work — see [Credits](#credits--contributors).
+> Built as a **team project** for EEL 4730 (Programming Embedded Systems) at
+> Florida International University. This repository is maintained by
+> **Mohamed Elbahlool**, who contributed to the design, coding, and testing
+> of the system — see [Credits](#credits--contributors).
 
 ![Full system](images/full-system.jpg)
 
@@ -195,19 +195,18 @@ BUZZER: ON
 
 ## Credits & Contributors
 
-This began as a **team project** for **EEL 4730 — Programming Embedded
-Systems** at **Florida International University** (Spring 2026, Dr. Shafiul
-Islam):
+Built as a **team project** for **EEL 4730 — Programming Embedded Systems**
+at **Florida International University** (Spring 2026, Dr. Shafiul Islam).
 
-- **Paola Dorado Galicia** — original repository author and maintainer
-  ([original repo](https://github.com/Paola-DG/Smart-Home-Appliance-Controller))
-- **Mohamed Elbahlool** — project contributor; author and maintainer of this
-  cleaned, documented, portfolio edition
+**Contributors:**
+- **Mohamed Elbahlool** — design, firmware development, testing, and
+  maintainer of this repository
+- **Paola Dorado Galicia** — design, firmware development, and testing
+  ([repository](https://github.com/Paola-DG/Smart-Home-Appliance-Controller))
 
-This repository preserves the original commit history. The changes on top of
-it are organizational: restructured folders, cleaned comments, rewritten
-documentation, and reconstructed schematics — the design and firmware logic
-are the team's original work.
+This repository preserves the project's original commit history and adds
+expanded documentation, reorganized project structure, and schematics on
+top of the team's original firmware and design.
 
 ## License
 
