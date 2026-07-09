@@ -1,0 +1,191 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 950" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace">
+  <defs>
+    <style>
+      .board { fill: #161b22; stroke: #58a6ff; stroke-width: 1.5; }
+      .comp  { fill: #10151b; stroke: #3fb950; stroke-width: 1.2; }
+      .title { fill: #e6edf3; font-size: 21px; font-weight: bold; }
+      .name  { fill: #e6edf3; font-size: 14px; font-weight: bold; }
+      .sub   { fill: #7d8590; font-size: 11px; }
+      .pin   { fill: #e6edf3; font-size: 11.5px; }
+      .plabel{ fill: #7d8590; font-size: 10px; }
+      .wire  { fill: none; stroke-width: 1.6; }
+      .w-lcd { stroke: #58a6ff; }
+      .w-sen { stroke: #d29922; }
+      .w-out { stroke: #bc8cff; }
+      .w-pwr { stroke: #f85149; }
+      .w-gnd { stroke: #7d8590; stroke-dasharray: 5 3; }
+      .leg   { fill: #e6edf3; font-size: 11px; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1240" height="950" fill="#0d1117"/>
+  <text x="620" y="36" text-anchor="middle" class="title">Smart Home Appliance Controller — Wiring Diagram</text>
+  <text x="620" y="56" text-anchor="middle" class="sub">Arduino UNO R3 · DHT11 · LDR · LCD1602 (4-bit) · PN2222 fan driver · state LEDs · active buzzer</text>
+
+  <!-- ================= Arduino UNO (center) ================= -->
+  <rect x="500" y="90" width="240" height="640" class="board" rx="10"/>
+  <text x="620" y="118" text-anchor="middle" class="name">Arduino UNO R3</text>
+  <text x="620" y="136" text-anchor="middle" class="sub">ATmega328P · 5V logic</text>
+
+  <!-- left pins (LCD + power) -->
+  <g text-anchor="start">
+    <text x="508" y="174" class="pin">5V</text>
+    <text x="508" y="204" class="pin">GND</text>
+    <text x="508" y="264" class="pin">A2</text>
+    <text x="508" y="304" class="pin">A3</text>
+    <text x="508" y="344" class="pin">A4</text>
+    <text x="508" y="384" class="pin">A5</text>
+    <text x="508" y="424" class="pin">D12</text>
+    <text x="508" y="464" class="pin">A1</text>
+  </g>
+  <g text-anchor="start">
+    <text x="545" y="264" class="plabel">→ RS</text>
+    <text x="545" y="304" class="plabel">→ E</text>
+    <text x="545" y="344" class="plabel">→ D4</text>
+    <text x="545" y="384" class="plabel">→ D5</text>
+    <text x="545" y="424" class="plabel">→ D6</text>
+    <text x="545" y="464" class="plabel">→ D7</text>
+  </g>
+
+  <!-- right pins -->
+  <g text-anchor="end">
+    <text x="732" y="164" class="pin">D13</text>
+    <text x="732" y="204" class="pin">A0</text>
+    <text x="732" y="264" class="pin">D2</text>
+    <text x="732" y="294" class="pin">D3</text>
+    <text x="732" y="354" class="pin">D7</text>
+    <text x="732" y="384" class="pin">D8</text>
+    <text x="732" y="414" class="pin">D10</text>
+    <text x="732" y="474" class="pin">D6</text>
+    <text x="732" y="534" class="pin">D11</text>
+    <text x="732" y="604" class="pin">5V</text>
+    <text x="732" y="644" class="pin">GND</text>
+  </g>
+  <text x="726" y="588" text-anchor="end" class="plabel">→ breadboard rails feed</text>
+  <text x="726" y="620" text-anchor="end" class="plabel">DHT11, LDR, LCD backlight</text>
+
+  <!-- ================= LCD1602 (left) ================= -->
+  <rect x="60" y="120" width="280" height="500" class="comp" rx="8"/>
+  <text x="200" y="148" text-anchor="middle" class="name">LCD1602</text>
+  <text x="200" y="165" text-anchor="middle" class="sub">HD44780 · 4-bit parallel mode</text>
+  <g text-anchor="end">
+    <text x="332" y="199" class="pin">VSS</text>
+    <text x="332" y="229" class="pin">VDD</text>
+    <text x="332" y="259" class="pin">V0</text>
+    <text x="332" y="289" class="pin">RS</text>
+    <text x="332" y="319" class="pin">RW</text>
+    <text x="332" y="349" class="pin">E</text>
+    <text x="332" y="379" class="pin">D4</text>
+    <text x="332" y="409" class="pin">D5</text>
+    <text x="332" y="439" class="pin">D6</text>
+    <text x="332" y="469" class="pin">D7</text>
+    <text x="332" y="529" class="pin">A</text>
+    <text x="332" y="559" class="pin">K</text>
+  </g>
+  <g text-anchor="start">
+    <text x="70" y="199" class="plabel">GND</text>
+    <text x="70" y="229" class="plabel">5V</text>
+    <text x="70" y="259" class="plabel">contrast (pot wiper)</text>
+    <text x="70" y="319" class="plabel">GND (write-only)</text>
+    <text x="70" y="529" class="plabel">backlight +5V</text>
+    <text x="70" y="559" class="plabel">backlight GND</text>
+  </g>
+
+  <!-- LCD wires -->
+  <path class="wire w-gnd" d="M340 195 H400 V200 H500"/>
+  <path class="wire w-pwr" d="M340 225 H410 V170 H500"/>
+  <path class="wire w-lcd" d="M340 285 H430 V260 H500"/>
+  <path class="wire w-lcd" d="M340 345 H440 V300 H500"/>
+  <path class="wire w-lcd" d="M340 375 H450 V340 H500"/>
+  <path class="wire w-lcd" d="M340 405 H460 V380 H500"/>
+  <path class="wire w-lcd" d="M340 435 H470 V420 H500"/>
+  <path class="wire w-lcd" d="M340 465 H480 V460 H500"/>
+
+  <!-- Contrast pot -->
+  <rect x="60" y="650" width="280" height="80" class="comp" rx="8"/>
+  <text x="200" y="676" text-anchor="middle" class="name">10k Potentiometer</text>
+  <text x="200" y="695" text-anchor="middle" class="sub">ends → 5V and GND</text>
+  <text x="200" y="712" text-anchor="middle" class="sub">wiper → LCD V0 (contrast)</text>
+  <path class="wire w-lcd" d="M200 650 V615 H346 V255 H340" opacity="0.8"/>
+
+  <!-- ================= DHT11 (right top) ================= -->
+  <rect x="880" y="110" width="300" height="100" class="comp" rx="8"/>
+  <text x="1030" y="136" text-anchor="middle" class="name">DHT11 — Temp / Humidity</text>
+  <g text-anchor="start">
+    <text x="888" y="160" class="pin">DATA</text>
+    <text x="888" y="180" class="pin">VCC → 5V</text>
+    <text x="888" y="200" class="pin">GND → GND</text>
+  </g>
+  <text x="1172" y="160" text-anchor="end" class="plabel">single-wire digital</text>
+  <path class="wire w-sen" d="M732 160 H790 V156 H880"/>
+
+  <!-- ================= LDR divider ================= -->
+  <rect x="880" y="240" width="300" height="90" class="comp" rx="8"/>
+  <text x="1030" y="266" text-anchor="middle" class="name">Photoresistor (LDR)</text>
+  <text x="1030" y="288" text-anchor="middle" class="sub">5V ─[ LDR ]─●─[ 10kΩ ]─ GND</text>
+  <text x="1030" y="308" text-anchor="middle" class="sub">divider node ● → A0 (0–1023)</text>
+  <path class="wire w-sen" d="M732 200 H800 V285 H880"/>
+
+  <!-- ================= Buttons ================= -->
+  <rect x="880" y="360" width="300" height="90" class="comp" rx="8"/>
+  <text x="1030" y="386" text-anchor="middle" class="name">Push Buttons</text>
+  <g text-anchor="start">
+    <text x="888" y="410" class="pin">MODE  — D2 → GND</text>
+    <text x="888" y="432" class="pin">SPEED — D3 → GND</text>
+  </g>
+  <text x="1172" y="410" text-anchor="end" class="plabel">INPUT_PULLUP</text>
+  <text x="1172" y="432" text-anchor="end" class="plabel">INPUT_PULLUP</text>
+  <path class="wire w-out" d="M732 260 H810 V406 H880"/>
+  <path class="wire w-out" d="M732 290 H800 V428 H880"/>
+
+  <!-- ================= State LEDs ================= -->
+  <rect x="880" y="480" width="300" height="110" class="comp" rx="8"/>
+  <text x="1030" y="506" text-anchor="middle" class="name">State LEDs</text>
+  <g text-anchor="start">
+    <text x="888" y="530" class="pin">D7  ─[220Ω]─ RED   ─ GND</text>
+    <text x="888" y="552" class="pin">D8  ─[220Ω]─ GREEN ─ GND</text>
+    <text x="888" y="574" class="pin">D10 ─[220Ω]─ BLUE  ─ GND</text>
+  </g>
+  <path class="wire w-out" d="M732 350 H820 V526 H880"/>
+  <path class="wire w-out" d="M732 380 H810 V548 H880"/>
+  <path class="wire w-out" d="M732 410 H800 V570 H880"/>
+
+  <!-- ================= Buzzer ================= -->
+  <rect x="880" y="620" width="300" height="70" class="comp" rx="8"/>
+  <text x="1030" y="646" text-anchor="middle" class="name">Active Buzzer</text>
+  <text x="1030" y="668" text-anchor="middle" class="sub">D6 → (+)  ·  (−) → GND</text>
+  <path class="wire w-out" d="M732 470 H820 V650 H880"/>
+
+  <!-- ================= Fan driver ================= -->
+  <rect x="620" y="760" width="560" height="160" class="comp" rx="8"/>
+  <text x="900" y="788" text-anchor="middle" class="name">DC Fan Driver (low-side switch)</text>
+  <g text-anchor="start">
+    <text x="640" y="818" class="pin">D11 ─[ 1kΩ ]─ base   PN2222 (NPN)</text>
+    <text x="640" y="842" class="pin">emitter → GND (common with battery −)</text>
+    <text x="640" y="866" class="pin">collector → motor (−) · motor (+) → battery pack (+)</text>
+    <text x="640" y="890" class="pin">1N4007 flyback diode across motor (cathode to +)</text>
+  </g>
+  <text x="1168" y="818" text-anchor="end" class="plabel">PWM speed control</text>
+  <text x="1168" y="842" text-anchor="end" class="plabel">external battery pack</text>
+  <path class="wire w-out" d="M732 530 H770 V760"/>
+  <path class="wire w-gnd" d="M732 640 H750 V740 H660 V760"/>
+
+  <!-- ================= Legend ================= -->
+  <g transform="translate(60, 770)">
+    <rect x="0" y="0" width="280" height="150" class="comp" rx="8"/>
+    <text x="140" y="26" text-anchor="middle" class="name">Legend</text>
+    <line x1="18" y1="48" x2="58" y2="48" class="wire w-lcd"/>
+    <text x="68" y="52" class="leg">LCD parallel bus</text>
+    <line x1="18" y1="72" x2="58" y2="72" class="wire w-sen"/>
+    <text x="68" y="76" class="leg">Sensor inputs</text>
+    <line x1="18" y1="96" x2="58" y2="96" class="wire w-out"/>
+    <text x="68" y="100" class="leg">GPIO / PWM outputs</text>
+    <line x1="18" y1="120" x2="58" y2="120" class="wire w-pwr"/>
+    <text x="68" y="124" class="leg">5V power</text>
+    <line x1="18" y1="140" x2="58" y2="140" class="wire w-gnd"/>
+    <text x="68" y="144" class="leg">Ground</text>
+  </g>
+  <text x="410" y="770" class="sub">All grounds are common:</text>
+  <text x="410" y="788" class="sub">UNO GND, breadboard rail,</text>
+  <text x="410" y="806" class="sub">battery (−), LCD VSS/RW/K.</text>
+</svg>
