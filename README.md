@@ -4,6 +4,8 @@
 ![Language](https://img.shields.io/badge/Language-C%2B%2B-blue?style=flat&logo=cplusplus)
 ![Course](https://img.shields.io/badge/FIU-EEL4730-blue?style=flat)
 
+**Portfolio case study:** [embedded state machine, safety behavior, and team attribution](https://www.mohamedelbahlool.com/en/work/smart-home-controller/)
+
 An embedded climate controller that automatically manages a DC fan from
 real-time temperature, humidity, and ambient light — built on an Arduino
 UNO R3 with a four-mode state machine, an LCD status display, and a
